@@ -8,12 +8,49 @@ Notable differences:
 (except the display, pushbuttons, buzzer, and relay) are mounted on an 
 Adafruit Proto Shield -- all of the components are through-hole components.
 
-2) Everything is mounted in a pair of plastic boxes and instead of "hacking" 
-an extension code, an AC power and a pair of AC Receptacles are used.
+There is a KiCAD project here. It includes a "four layer" board. Actually I
+have no intention of creating a "four layer" PCB. I intend to build this on an
+Adafruit protoshield (Product #2077). The PCB I "designed" with KiCAD is a
+mock up for the Adafruit protoshield (almost). The red and green layers
+represent the wiring already on the protoshield, and includes the bus strips.
+The blue and white "layers" represent the added wiring. The board also
+provides the approximate component placement. For those people without KiCAD
+installed, I have included a PDF of the schematic in the file
+ReflowToasterOven.pdf and some "pictures" of the board in the BoardPictures
+folder (one is a screen shot of the KiCAD PCB layout and the others are from
+the 3D viewer).
+
+2) Everything is mounted in a pair of plastic boxes and instead of "hacking"
+an extension code, an AC power entry module and a pair of AC Receptacles are
+used.
+
+There are three files related to the mechanical construction:
+
+ReflowToasterOven-mech.tcl
+ReflowToasterOven-mech.gcad
+ReflowToasterOven-mech.dxf
+
+ReflowToasterOven-mech.tcl is a Tcl program that generates the 
+ReflowToasterOven-mech.gcad file, which is the input for the GCAD3D program.  
+The ReflowToasterOven-mech.dxf is a DXF file, that can be imported to any 3D 
+cad program.
+
 
 3) An Adafruit 1.8" *Color* TFT LCD SPI display is used, using Adafruit's 
 graphics library.
 
 4) The software is a "standard" Arduino project.
+
+And the code lives in the ReflowToasterOven subdirectory. It compiles
+successfully and just fits in the Uno's flash memory and only 1/2 of the SRAM
+is used by static variables, leaving just under 1K for dynamic variables.
+
+You will need to install the Adafruit ST7735 and Adafruit_GFX libraries from 
+Adafruit's GitHub repo.  You will also need the MsTimer2 library 
+(http://www.pjrc.com/teensy/td_libs_MsTimer2.html).
+
+*Most* of the code is copied from the original program by frank26080115.  I 
+modified things to use C++ classes and adapted to use the Arduino I/O 
+libraries, the Adafruit ST7735-based TFT display and the MsTimer2 library.
 
 I have not built or tested it yet.
