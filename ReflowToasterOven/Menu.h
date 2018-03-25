@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 14:45:39 2018
-//  Last Modified : <180325.0821>
+//  Last Modified : <180325.1421>
 //
 //  Description	
 //
@@ -49,7 +49,6 @@
 #include <Adafruit_ST7735.h>
 #include <SPI.h>
 #include "reflowtoasteroven.h"
-#include <stdio.h>
 #include "heatingelement.h"
 #include "temperaturemeasurement.h"
 #include "buttons.h"
@@ -73,6 +72,8 @@ static const uint8_t TFT_RST = 9; //
 
 class Menu : public Adafruit_ST7735 {
 private:
+    // Graphics colors
+    uint16_t bg, graphcolor, txtfg, txtbg,;
     // this string is allocated for temporary use
     char strbuf[(LCD_WIDTH/FONT_WIDTH) + 2];
     // this counts the number of loop iterations that a button has been held for
@@ -104,11 +105,23 @@ private:
     void auto_go(profile_t* profile);
     void draw_graph(void);
 public:
-    Menu() : Adafruit_ST7735(TFTCS, TFT_DC, TFT_RST) {
+    Menu(uint16_t _bg = ST7735_BLACK,uint16_t _txtfg = ST7735_WHITE,
+         uint16_t _graphcolor = ST7735_WHITE) : 
+    Adafruit_ST7735(TFTCS, TFT_DC, TFT_RST) {
         button_held = 0;
+        bg = _bg;
+        txtfg = _txtfg;
+        txtbg = _bg;
+        graphcolor = _graphcolor;
         initR(INITR_BLACKTAB);
-        fillScreen(ST7735_BLACK);
+        fillScreen(bg);
+        setTextColor(txtfg,txtbg);
+        setTextWrap(false);
+        setTextSize(1);
         setRotation(1); // Rotate screen 90 degrees (?)
+        pinMode(BUZZER,OUTPUT);
+        pinMode(BACKLIGHT,OUTPUT);
+        analogWrite(BACKLIGHT,128);/* Medium brightness */
     }
     void main();
     

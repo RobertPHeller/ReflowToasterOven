@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 14:46:53 2018
-//  Last Modified : <180325.0935>
+//  Last Modified : <180325.1415>
 //
 //  Description	
 //
@@ -472,10 +472,11 @@ void Menu::menu_edit_profile(profile_t* profile)
                 }
                 else
                 {
-                    fillScreen(ST7735_BLACK);
+                    fillScreen(bg);
                     /*lcd_clear_screen();*/
                     /*lcd_set_row_column(0, 0);*/
                     printlnat(0,0,PSTR("Error in Profile"));
+                    tone(BUZZER,NOTE_GS3,3000);
                     delay(1000);
                 }
             }
@@ -579,8 +580,9 @@ void Menu::menu_auto_mode()
                 profile.Default();
                 profile.Save(); // save to eeprom
                 
-                fillScreen(ST7735_BLACK);
+                fillScreen(bg);
                 printlnat(0,0,PSTR("Reset to Defaults... Done"));
+                tone(BUZZER,NOTE_C5,3000);
                 delay(1000);
             }
         }
@@ -592,10 +594,10 @@ void Menu::menu_auto_mode()
                 while (button_up());
                 button_debounce();
                 
-                fillScreen(ST7735_BLACK);
+                fillScreen(bg);
                 
                 auto_go(&profile);
-                tone(BUZZER,NOTE_A4,2);
+                tone(BUZZER,NOTE_A4,3000);
                 // go back to home menu when finished
                 return;
             }
@@ -751,8 +753,9 @@ void Menu::menu_edit_settings()
                 }
                 else
                 {
-                    fillScreen(ST7735_BLACK);
+                    fillScreen(bg);
                     printlnat(0,0,PSTR("Error in Settings"));
+                    tone(BUZZER,NOTE_GS3,3000);
                     delay(1000);
                 }
             }
@@ -888,6 +891,7 @@ void Menu::auto_go(profile_t* profile)
     {
         /*lcd_set_row_column(0, 0);*/
         printlnat(0,0,PSTR("Error in Profile"));
+        tone(BUZZER,NOTE_GS3,3000);
         delay(1000);
         return;
     }
@@ -1211,7 +1215,7 @@ void Menu::draw_graph(void)
         //uint8_t plan = LCD_HEIGHT - temp_plan[c];
         
         int rowtop = r * FONT_HEIGHT; // calculate actual y location based on row and 8 pixels per row
-        drawLine(c,0,c,history,ST7735_WHITE);
+        drawLine(c,0,c,history,graphcolor);
     }
 }
     
