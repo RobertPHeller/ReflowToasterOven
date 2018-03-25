@@ -1,0 +1,19 @@
+This project is based on the Instructables "Hack a Toaster Oven for Reflow
+Soldering" by frank26080115 at
+https://www.instructables.com/id/Hack-a-Toaster-Oven-for-Reflow-Soldering/
+
+Notable differences:
+
+1) It uses an ArduinoUno as the processing element and all of the electronics 
+(except the display, pushbuttons, buzzer, and relay) are mounted on an 
+Adafruit Proto Shield -- all of the components are through-hole components.
+
+2) Everything is mounted in a pair of plastic boxes and instead of "hacking" 
+an extension code, an AC power and a pair of AC Receptacles are used.
+
+3) An Adafruit 1.8" *Color* TFT LCD SPI display is used, using Adafruit's 
+graphics library.
+
+4) The software is a "standard" Arduino project.
+
+I have not built or tested it yet.
