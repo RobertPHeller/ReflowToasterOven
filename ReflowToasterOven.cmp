@@ -1,0 +1,136 @@
+Cmp-Mod V01 Created by CvPcb (2013-june-11)-stable date = Thu 22 Mar 2018 17:29:24 EDT
+
+BeginCmp
+TimeStamp = /5AABD8BF;
+Reference = C1;
+ValeurCmp = .1 uF;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABDE3F;
+Reference = C2;
+ValeurCmp = 47 uF;
+IdModule  = C1V7;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABD432;
+Reference = LCD1;
+ValeurCmp = 160X128_TFT_DISPLAY;
+IdModule  = pin_strip_10;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D70129;
+Reference = P1;
+ValeurCmp = Power;
+IdModule  = Socket_Arduino_Uno:Socket_Strip_Arduino_1x08;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D70DD8;
+Reference = P2;
+ValeurCmp = Analog;
+IdModule  = Socket_Arduino_Uno:Socket_Strip_Arduino_1x06;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D721E0;
+Reference = P3;
+ValeurCmp = Digital;
+IdModule  = Socket_Arduino_Uno:Socket_Strip_Arduino_1x10;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D7164F;
+Reference = P4;
+ValeurCmp = Digital;
+IdModule  = Socket_Arduino_Uno:Socket_Strip_Arduino_1x08;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D71177;
+Reference = P5;
+ValeurCmp = CONN_01X01;
+IdModule  = Socket_Arduino_Uno:Arduino_1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D71274;
+Reference = P6;
+ValeurCmp = CONN_01X01;
+IdModule  = Socket_Arduino_Uno:Arduino_1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D712A8;
+Reference = P7;
+ValeurCmp = CONN_01X01;
+IdModule  = Socket_Arduino_Uno:Arduino_1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /56D712DB;
+Reference = P8;
+ValeurCmp = CONN_01X01;
+IdModule  = Socket_Arduino_Uno:Arduino_1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AB420C6;
+Reference = P9;
+ValeurCmp = Buzzer;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABD632;
+Reference = P10;
+ValeurCmp = Switches;
+IdModule  = pin_strip_4;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABDC2E;
+Reference = R2;
+ValeurCmp = 10K Ohms;
+IdModule  = R1;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABD4DC;
+Reference = SW1;
+ValeurCmp = Reset;
+IdModule  = SW_PUSH_SMALL;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABD8D5;
+Reference = T1;
+ValeurCmp = Thermocouple;
+IdModule  = mors_2p;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABDBC7;
+Reference = T2;
+ValeurCmp = Relay;
+IdModule  = mors_2p;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABDD7C;
+Reference = T3;
+ValeurCmp = FAN;
+IdModule  = mors_2p;
+EndCmp
+
+BeginCmp
+TimeStamp = /5AABD1F3;
+Reference = U1;
+ValeurCmp = AD595AQ;
+IdModule  = DIP-14__300;
+EndCmp
+
+EndListe
