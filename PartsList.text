@@ -6,6 +6,7 @@ On Board:
 1x: .1 uF Cap 21RZ310-RC
 1x: 160X128_TFT_DISPLAY (header) 855-M20-9771046
 1x: Switches (header) 855-M20-9730446
+1x: Buzzer (header) 855-M20-9730246
 2x: 10K Ohms resistors 660-MS1/4DCT52R1002
 3x: Screw terminals (Thermocouple, Relay, FAN) 649-220316-H021B01LF
 1x: AD595AQ 584-AD595AQ
@@ -22,7 +23,9 @@ Mouser:
 3x: Push button switches 642-MPB11102
 1x: Fan 490-CFM-4010V-070273
 2x: Connector2, 10-pin (for TFT_DISPLAY) 538-14-60-0101
-(1x: Connector, 4-pin (for switches) 538-14-56-2041)
+1x: Connector, 4-pin (for switches) 538-14-56-2041
+1x: Connector, 2-pin (for buzzer) 538-14-56-2021
+
 
 Adafruit:
 
@@ -30,6 +33,7 @@ Adafruit:
 1x: Adafruit protoshield 2077
 1x: thermocouple 270
 1x: TFT Display breakout 618
+1x: Large Piezo 1739
 
 Other:
 
