@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:03:08 2018
-//  Last Modified : <180326.1301>
+//  Last Modified : <180326.1816>
 //
 //  Description	
 //
@@ -138,5 +138,6 @@ void TemperatureMeasurement::get_ADC_sample ()
 void TemperatureMeasurement::init()
 {
     adc_sample_idx = 0;
+    analogReference(EXTERNAL);
 }
 
