@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun Mar 18 10:39:04 2018
-#  Last Modified : <180322.1800>
+#  Last Modified : <180326.1635>
 #
 #  Description	
 #
@@ -79,7 +79,7 @@ snit::type PolySurface {
         }
         return [format {S%d} $index]
     }
-    method printPS {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {scale .001}} {
+    method printPS {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {xscale .001} {yscale .001}} {
         if {$options(-rectangle)} {
             set p $options(-cornerpoint)
             set x0 [lindex $p $xi]
@@ -92,7 +92,7 @@ snit::type PolySurface {
             set dy2 [lindex $v2 $yi]
             set dx [expr {$dx1 + $dx2}]
             set dy [expr {$dy1 + $dy2}]
-            puts $fp [format {gsave %f %f translate %f %f scale} $xorg $yorg $scale $scale]
+            puts $fp [format {gsave %f %f translate %f %f scale} $xorg $yorg $xscale $yscale]
             puts $fp [format {newpath %f %f moveto} $x0 $y0]
             puts $fp [format {%f %f rlineto} 0 $dy]
             puts $fp [format {%f %f rlineto} $dx 0]
@@ -100,7 +100,7 @@ snit::type PolySurface {
             puts $fp [format {%f %f rlineto} [expr {0-$dx}] 0]
             puts $fp {stroke grestore}
         } else {
-            puts $fp [format {gsave %f %f translate %f %f scale newpath} $xorg $yorg $scale $scale]
+            puts $fp [format {gsave %f %f translate %f %f scale newpath} $xorg $yorg $xscale $yscale]
             set cmd moveto
             foreach p $options(-polypoints) {
                 puts $fp [format {%f %f %s} [lindex $p $xi] [lindex $p $yi] $cmd]
@@ -174,12 +174,12 @@ snit::type cylinder {
                         $options(-radius) $options(-direction)]
         puts $fp [format {b%d = PRISM C%d %f} $index $index $options(-height)]
     }
-    method printPS {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {scale .001}} {
+    method printPS {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {xscale .001} {yscale .001}} {
         set b $options(-bottom)
         set xcenter [lindex $b $xi]
         set ycenter [lindex $b $yi]
         set raduis  $options(-radius)
-        puts $fp [format {gsave %f %f translate %f %f scale} $xorg $yorg $scale $scale]
+        puts $fp [format {gsave %f %f translate %f %f scale} $xorg $yorg $xscale $yscale]
         puts $fp [format {newpath %f %f %f 0 360 arc fill} $xcenter $ycenter $raduis]
         puts $fp {grestore}
     }
@@ -501,6 +501,8 @@ snit::type ham_1591XXTSBK {
     method InsideHeight {} {return $insideheight}
     method OutsideWidth {} {return $topouterwidth}
     method OutsideLength {} {return $topouterlength}
+    method BottomOuterWidth {} {return $bottomouterwidth}
+    method BottomOuterLength {} {return $bottomouterlength}
     method WallThickness {} {
         if {[$self cget -upsidedown]} {
             return [expr {-1*$wallthickness}]
@@ -644,7 +646,50 @@ snit::type ham_1591XXTSBK {
                          [expr {$screwZ +$ZZ}]] \
                 -radius 62.5 -height $height -color $::white]
     }
-                
+    method printPSLid {fp} {
+        if {$options(-includelid)} {
+            set lidsurf [$lid cget -surface]
+            $lidsurf printPS $fp
+            for {set s 0} {$s < 4} {incr s} {
+                [set lidscrew$s] printPS $fp 
+            }
+        }
+    }
+    method printPSLeft  {fp} {
+        if {[$self cget -upsidedown]} {
+            set yscale -.001
+        } else {
+            set yscale .001
+        }
+        [$left cget -surface] printPS $fp 1 2 0 0 .001 $yscale
+    }
+    method printPSRight  {fp} {
+        if {[$self cget -upsidedown]} {
+            set yscale -.001
+        } else {
+            set yscale .001
+        }
+        [$right cget -surface] printPS $fp 1 2 0 0 .001 $yscale
+    }
+    method printPSFront {fp} {
+        if {[$self cget -upsidedown]} {
+            set yscale -.001
+        } else {
+            set yscale .001
+        }
+        [$front cget -surface] printPS $fp 1 2 0 0 .001 $yscale
+    }
+    method printPSBack {fp} {
+        if {[$self cget -upsidedown]} {
+            set yscale -.001
+        } else {
+            set yscale .001
+        }
+        [$back cget -surface] printPS $fp 1 2 0 0 .001 $yscale
+    }
+    method printPSBottom {fp} {
+        [$bottom cget -surface] printPS $fp
+    }
     method print {{fp stdout}} {
         $bottom print $fp
         $left print $fp
@@ -721,6 +766,15 @@ snit::type TFT_Display {
         $mhole2 print $fp
         $mhole3 print $fp
     }
+    method printPSDisplayCutout {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {scale .001}} {
+        set displaySurf [$display cget -surface]
+        $displaySurf printPS $fp $xi $yi $xorg $yorg $scale
+        $mhole0 printPS $fp $xi $yi $xorg $yorg $scale
+        $mhole1 printPS $fp $xi $yi $xorg $yorg $scale
+        $mhole2 printPS $fp $xi $yi $xorg $yorg $scale
+        $mhole3 printPS $fp $xi $yi $xorg $yorg $scale
+    }
+        
     method MountingHole {index zMount height {name %AUTO%}} {
         set xoff [$self cget -xoff]
         set yoff [$self cget -yoff]
@@ -925,6 +979,9 @@ snit::type ACPowerEntry {
         $flange print $fp
         $mhole0 print $fp
         $mhole1 print $fp
+    }
+    method CutoutSurf {} {
+        return [$body cget -surface]
     }
 }
 
@@ -1134,8 +1191,64 @@ snit::type LargePiezo {
         $mhole0 print $fp
         $mhole1 print $fp
     }
+    method printPS {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {scale .001}} {
+        $body printPS $fp $xi $yi $xorg $yorg $scale
+        $mhole0 printPS $fp $xi $yi $xorg $yorg $scale
+        $mhole1 printPS $fp $xi $yi $xorg $yorg $scale
+    }
+        
 }
         
+snit::type PostScriptFile {
+    pragma -hastypeinfo    no
+    pragma -hastypedestroy no
+    pragma -hasinstances   no
+    typevariable pageno 0
+    typevariable psName {}
+    typevariable psFP   {}
+    typevariable psTitle {}
+    typevariable psCreator {}
+    typevariable psPages 0
+    typemethod open {} {
+        set psName  [file rootname [info script]].ps
+        set psFP    [open $psName w]
+        set psTitle [file rootname [file tail [info script]]]
+        set psCreator [file tail [info script]]
+        set pageno 0
+        set psPages 0
+        puts $psFP "%!PS-Adobe-3.0"
+        puts $psFP [format {%%Title: %s} $psTitle]
+        puts $psFP [format {%%Creator: %s} $psCreator]
+        puts $psFP {%%BoundingBox: 0 0 612 792}
+        puts $psFP {%%Pages: (atend)}
+        puts $psFP {%%EndComments}
+        puts $psFP {%%BeginProlog}
+        puts $psFP {/inch {72 mul} def}
+        puts $psFP {%%EndProlog}
+        puts $psFP {}
+    }
+    typemethod newPage {{pageTitle {}}} {
+        if {$pageno > 0} {
+            puts $psFP {showpage}
+        }
+        incr pageno
+        puts $psFP [format {%%%%Page: %d %d} $pageno $pageno]
+        puts $psFP {1.5 inch 1.5 inch translate 1 inch 1 inch scale}
+        puts $psFP {}
+        puts $psFP [format {gsave 0 -.75 moveto /NewCenturySchlbk-Bold findfont .25 scalefont setfont 0 0 0 setrgbcolor (%s) show grestore} $pageTitle]
+    }
+    typemethod fp {} {return $psFP}
+    typemethod close {} {
+        if {$pageno > 0} {
+            puts $psFP {showpage}
+        }
+        puts $psFP {%%Trailer}
+        puts $psFP [format {%%%%Pages: %d} $pageno]
+        puts $psFP {%%EOF}
+        close $psFP
+        set psFP {}
+    }
+}
 
 
 puts {MODSIZ 15000 0.2 2
@@ -1298,3 +1411,74 @@ set backrecept [ACReceptacle BackReeptacle \
 $backrecept print
 set backreceptMHole [$backrecept MountHole [expr {[$lowerbox WallThickness] * -1}] 0 $::white BackReeptacleMountHole]
 $backreceptMHole print
+
+
+PostScriptFile open
+
+PostScriptFile newPage {Upper Lid}
+
+$upperbox printPSLid [PostScriptFile fp]
+$display printPSDisplayCutout [PostScriptFile fp]
+$switch1 printPS [PostScriptFile fp]
+$switch2 printPS [PostScriptFile fp]
+$switch3 printPS [PostScriptFile fp]
+$buzzer printPS [PostScriptFile fp]
+
+PostScriptFile newPage {Upper Box Right End}
+
+$upperbox printPSFront [PostScriptFile fp]
+set usb_cutout [$uno USBJackCutout] 
+$usb_cutout printPS [PostScriptFile fp] 1 2 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] 0 -.001
+set powerjack_cutout [$uno PowerJackCutout] 
+$powerjack_cutout printPS [PostScriptFile fp] 1 2 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] 0 -.001
+
+PostScriptFile newPage {Upper Box Left End}
+
+$upperbox printPSBack [PostScriptFile fp]
+
+$thermocoupleHole printPS [PostScriptFile fp] 1 2
+
+PostScriptFile newPage {Upper Box Bottom}
+
+$upperbox printPSBottom [PostScriptFile fp]
+
+$fanRelayWireHole printPS [PostScriptFile fp] 0 1 0 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] .001 -.001
+$upperUnoMountingHole0 printPS [PostScriptFile fp] 0 1 0  [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] .001 -.001
+$upperUnoMountingHole1 printPS [PostScriptFile fp] 0 1 0 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] .001 -.001
+$upperUnoMountingHole2 printPS [PostScriptFile fp] 0 1 0 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] .001 -.001
+$upperUnoMountingHole3 printPS [PostScriptFile fp] 0 1 0 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] .001 -.001
+
+PostScriptFile newPage {Lower Box Bottom}
+
+$lowerbox printPSBottom [PostScriptFile fp]
+
+$fanRelayWireHole printPS [PostScriptFile fp] 
+$upperUnoMountingHole0 printPS [PostScriptFile fp] 
+$upperUnoMountingHole1 printPS [PostScriptFile fp] 
+$upperUnoMountingHole2 printPS [PostScriptFile fp] 
+$upperUnoMountingHole3 printPS [PostScriptFile fp] 
+
+PostScriptFile newPage {Lower Box Right End}
+
+$lowerbox printPSFront [PostScriptFile fp]
+
+[$acpowerentry CutoutSurf] printPS [PostScriptFile fp] 1 2 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] 0 -.001 -.001
+[$frontreceptMHole cget -surface]  printPS [PostScriptFile fp] 1 2 [expr {([$upperbox cget -yoff]+[$upperbox BottomOuterWidth])/1000.0}] 0 -.001 -.001
+
+PostScriptFile newPage {Lower Box Left End}
+
+$lowerbox printPSBack [PostScriptFile fp]
+[$backreceptMHole cget -surface]  printPS [PostScriptFile fp] 1 2 0 0 .001 -.001
+
+PostScriptFile newPage {Heat Sink Holes}
+
+[$heatsinkpanel cget -surface] printPS [PostScriptFile fp]
+
+$hs_relaymounthole0 printPS [PostScriptFile fp] 0 1 [expr {([$lowerbox cget -xoff]+[$lowerbox BottomOuterLength])/1000.0}] 0 -.001
+$hs_relaymounthole1 printPS [PostScriptFile fp] 0 1 [expr {([$lowerbox cget -xoff]+[$lowerbox BottomOuterLength])/1000.0}] 0 -.001
+for {set l 0} {$l < 4} {incr l} {
+    [set hs_lidhole$l] printPS [PostScriptFile fp] 0 1 [expr {([$lowerbox cget -xoff]+[$lowerbox BottomOuterLength])/1000.0}] 0 -.001
+}
+$fanWireHole printPS [PostScriptFile fp] 0 1 [expr {([$lowerbox cget -xoff]+[$lowerbox BottomOuterLength])/1000.0}] 0 -.001
+
+PostScriptFile close
