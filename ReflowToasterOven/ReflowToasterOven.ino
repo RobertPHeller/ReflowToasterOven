@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:01:57 2018
-//  Last Modified : <180326.1044>
+//  Last Modified : <180326.1323>
 //
 //  Description	
 //
@@ -59,18 +59,17 @@ settings_t settings; // store this globally so it's easy to access
 
 void tmr_init();
 
-uint16_t pid(double target, double current, double * integral, double * last_error);
-
-
 Menu menu = Menu();
+TemperatureMeasurement sensor = TemperatureMeasurement();
+Heat element = Heat();
 
 void setup()
 {
     Serial.begin(115200);
     Serial.println(PSTR("Initializing..."));
     
-    adc_init();
-    heat_init();
+    sensor.init();
+    element.init();
     tmr_init();
     menu.init();
     Serial.println(PSTR("Reflow Toaster Oven 1.0 Setup finished"));
@@ -79,52 +78,6 @@ void setup()
 
 void loop() {} // Not used
 
-// this estimates the PWM duty cycle needed to reach a certain steady temperature
-// if the toaster is capable of a maximum of 300 degrees, then 100% duty cycle is used if the target temperature is 300 degrees, and 0% duty cycle is used if the target temperature is room temperature.
-double approx_pwm(double target)
-{
-    return 65535.0 * ((target * THERMOCOUPLE_CONSTANT) / settings.max_temp);
-}
-
-uint16_t pid(double target, double current, double * integral, double * last_error)
-{
-    double error = target - current;
-    if (target == 0)
-    {
-        // turn off if target temperature is 0
-        
-        (*integral) = 0;
-        (*last_error) = error;
-        return 0;
-    }
-    else
-    {
-        if (target < 0)
-        {
-            target = 0;
-        }
-        
-        // calculate PID terms
-        
-        double p_term = settings.pid_p * error;		
-        double new_integral = (*integral) + error;
-        double d_term = ((*last_error) - error) * settings.pid_d;
-        (*last_error) = error;
-        double i_term = new_integral * settings.pid_i;
-        
-        double result = approx_pwm(target) + p_term + i_term + d_term;
-        
-        // limit the integral so it doesn't get out of control
-        if ((result >= 65535.0 && new_integral < (*integral)) || (result < 0.0 && new_integral > (*integral)) || (result <= 65535.0 && result >= 0))
-        {
-            (*integral) = new_integral;
-        }
-        
-        // limit the range and return the rounded result for use as the PWM OCR value
-        return (uint16_t)lround(result > 65535.0 ? 65535.0 : (result < 0.0 ? 0.0 : result));
-    }
-}
-
 volatile uint16_t tmr_ovf_cnt = 0;
 volatile char tmr_checktemp_flag = 0;
 volatile char tmr_drawlcd_flag = 0;
@@ -132,8 +85,8 @@ volatile char tmr_writelog_flag = 0;
 
 void TIMER0_OVF_vect()
 {
-    heat_isr();
-    get_ADC_sample();
+    element.isr();
+    sensor.get_ADC_sample();
     
     tmr_ovf_cnt++;
     if (tmr_ovf_cnt % 1024 == 0) // about 2s

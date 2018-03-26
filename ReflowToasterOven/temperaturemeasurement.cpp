@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:03:08 2018
-//  Last Modified : <180326.1027>
+//  Last Modified : <180326.1301>
 //
 //  Description	
 //
@@ -47,11 +47,6 @@
 
 static const char rcsid[] PROGMEM = "@(#) : $Id$";
 
-#define ADC_SAMPLE_SIZE 128
-#define ADC_AVERAGE_SIZE (ADC_SAMPLE_SIZE/4)
-volatile uint16_t adc_samples[ADC_SAMPLE_SIZE];
-volatile uint8_t adc_sample_idx;
-uint16_t temp_last_read = 0;
 
 /*
  * This file contains code that is specific for measuring the temperature using the AD595AQ
@@ -64,7 +59,7 @@ uint16_t temp_last_read = 0;
  * 
 */
 
-uint16_t sensor_read()
+uint16_t TemperatureMeasurement::read()
 {
 	int i, j;
 	uint16_t working_sample;
@@ -120,28 +115,28 @@ uint16_t sensor_read()
 	return result;
 }
 
-void sensor_filter_reset()
+void TemperatureMeasurement::filter_reset()
 {
-	temp_last_read = 0;
+    temp_last_read = 0;
 }
 
 // conversion functions
-uint16_t temperature_to_sensor(double temp)
+uint16_t TemperatureMeasurement::temperature_to_sensor(double temp) const
 {
 	return (uint16_t)lround(temp / THERMOCOUPLE_CONSTANT);
 }
 
 // new sample has arrived
-void get_ADC_sample ()
+void TemperatureMeasurement::get_ADC_sample ()
 {
-	// read in sample
-	adc_samples[adc_sample_idx] = analogRead(TEMP_MEASURE_CHAN);
-	adc_sample_idx = (adc_sample_idx + 1) % ADC_SAMPLE_SIZE;
+    // read in sample
+    adc_samples[adc_sample_idx] = analogRead(TEMP_MEASURE_CHAN);
+    adc_sample_idx = (adc_sample_idx + 1) % ADC_SAMPLE_SIZE;
 	
 }
 
-void adc_init()
+void TemperatureMeasurement::init()
 {
-	adc_sample_idx = 0;
+    adc_sample_idx = 0;
 }
 

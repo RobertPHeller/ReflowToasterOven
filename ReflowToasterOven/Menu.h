@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 14:45:39 2018
-//  Last Modified : <180326.1040>
+//  Last Modified : <180326.1313>
 //
 //  Description	
 //
@@ -56,14 +56,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define sensor_to_temperature(x) ((x)*THERMOCOUPLE_CONSTANT)
 
 
 
-static const uint8_t BUZZER = 2;    // Buzzer -- passed to Tone()
-static const uint8_t BACKLIGHT = 3; // PWM / AnalogWrite() backlight brightness
-static const uint8_t TFT_DC = 8; //  
-static const uint8_t TFT_RST = 9; // 
+#define BUZZER 2    // Buzzer -- passed to Tone()
+#define BACKLIGHT 3 // PWM / AnalogWrite() backlight brightness
+#define TFT_DC 8 //  
+#define TFT_RST 9 // 
 #define TFTCS SS //   |
 //#define MOSI 11 //    } TFT Display connections (MISO not used)
 //#define MISO 12 //    |
@@ -109,6 +108,8 @@ private:
     char* str_from_double(double value, int decimalplaces);
     void auto_go(profile_t* profile);
     void draw_graph(void);
+    double approx_pwm(double target);
+    uint16_t pid(double target, double current, double * integral, double * last_error);
 public:
     Menu(uint16_t _bg = ST7735_BLACK,uint16_t _txtfg = ST7735_WHITE,
          uint16_t _graphcolor = ST7735_WHITE) : 

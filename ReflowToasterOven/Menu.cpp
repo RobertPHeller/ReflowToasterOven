@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 14:46:53 2018
-//  Last Modified : <180326.1026>
+//  Last Modified : <180326.1321>
 //
 //  Description	
 //
@@ -49,6 +49,52 @@
 static const char rcsid[] PROGMEM = "@(#) : $Id$";
 
 
+
+// this estimates the PWM duty cycle needed to reach a certain steady temperature
+// if the toaster is capable of a maximum of 300 degrees, then 100% duty cycle is used if the target temperature is 300 degrees, and 0% duty cycle is used if the target temperature is room temperature.
+double Menu::approx_pwm(double target)
+{
+    return 65535.0 * ((target * THERMOCOUPLE_CONSTANT) / settings.max_temp);
+}
+
+uint16_t Menu::pid(double target, double current, double * integral, double * last_error)
+{
+    double error = target - current;
+    if (target == 0)
+    {
+        // turn off if target temperature is 0
+        
+        (*integral) = 0;
+        (*last_error) = error;
+        return 0;
+    }
+    else
+    {
+        if (target < 0)
+        {
+            target = 0;
+        }
+        
+        // calculate PID terms
+        
+        double p_term = settings.pid_p * error;		
+        double new_integral = (*integral) + error;
+        double d_term = ((*last_error) - error) * settings.pid_d;
+        (*last_error) = error;
+        double i_term = new_integral * settings.pid_i;
+        
+        double result = approx_pwm(target) + p_term + i_term + d_term;
+        
+        // limit the integral so it doesn't get out of control
+        if ((result >= 65535.0 && new_integral < (*integral)) || (result < 0.0 && new_integral > (*integral)) || (result <= 65535.0 && result >= 0))
+        {
+            (*integral) = new_integral;
+        }
+        
+        // limit the range and return the rounded result for use as the PWM OCR value
+        return (uint16_t)lround(result > 65535.0 ? 65535.0 : (result < 0.0 ? 0.0 : result));
+    }
+}
 
 // changes a value based on the up and down buttons
 double Menu::button_change_double(double oldvalue, double increment, double limit1, double limit2)
@@ -145,18 +191,18 @@ char* Menu::str_from_double(double value, int decimalplaces)
 
 void Menu::menu_manual_pwm_ctrl()
 {
-    sensor_filter_reset();
+    sensor.filter_reset();
     
     Serial.println(PSTR("manual PWM control mode,"));
     uint16_t iteration = 0;
 
     uint16_t cur_pwm = 0;
-    uint16_t cur_sensor = sensor_read();
-    heat_set(cur_pwm);
+    uint16_t cur_sensor = sensor.read();
+    element.set(cur_pwm);
     while(1)
     {
-        heat_set(cur_pwm);
-        cur_sensor = sensor_read();
+        element.set(cur_pwm);
+        cur_sensor = sensor.read();
         
         // draw the LCD
         for (int r = 0; r < LCD_ROWS; r++)
@@ -232,7 +278,7 @@ void Menu::menu_manual_pwm_ctrl()
 
 void Menu::menu_manual_temp_ctrl()
 {
-    sensor_filter_reset();
+    sensor.filter_reset();
     
     settings.Load(); // load from eeprom
 	
@@ -243,8 +289,8 @@ void Menu::menu_manual_temp_ctrl()
     uint16_t tgt_temp = 0;
     uint16_t cur_pwm = 0;
     double integral = 0.0, last_error = 0.0;
-    uint16_t tgt_sensor = temperature_to_sensor((double)tgt_temp);
-    uint16_t cur_sensor = sensor_read();
+    uint16_t tgt_sensor = sensor.temperature_to_sensor((double)tgt_temp);
+    uint16_t cur_sensor = sensor.read();
 	
     while(1)
     {
@@ -324,9 +370,9 @@ void Menu::menu_manual_temp_ctrl()
         {
             tmr_checktemp_flag = 0;
             
-            tgt_sensor = temperature_to_sensor((double)tgt_temp);
-            cur_sensor = sensor_read();
-            cur_pwm = pid((double)temperature_to_sensor((double)tgt_temp), (double)cur_sensor, &integral, &last_error);
+            tgt_sensor = sensor.temperature_to_sensor((double)tgt_temp);
+            cur_sensor = sensor.read();
+            cur_pwm = pid((double)sensor.temperature_to_sensor((double)tgt_temp), (double)cur_sensor, &integral, &last_error);
         }
         
         if (tmr_writelog_flag)
@@ -350,7 +396,7 @@ void Menu::menu_edit_profile(profile_t* profile)
 
     while(1)
     {
-        heat_set(0); // keep off for safety
+        element.set(0); // keep off for safety
         
         // draw on LCD
         for (int r = 0; r < LCD_ROWS; r++)
@@ -506,7 +552,7 @@ void Menu::menu_auto_mode()
 
     while(1)
     {
-        heat_set(0); // keep off for safety
+        element.set(0); // keep off for safety
 
         // draw on LCD
         for (int r = 0; r < LCD_ROWS; r++)
@@ -635,7 +681,7 @@ void Menu::menu_edit_settings()
     char selection = 0;
     while(1)
     {
-        heat_set(0); // keep off for safety
+        element.set(0); // keep off for safety
         
         // draw LCD
         for (int r = 0; r < LCD_ROWS; r++)
@@ -783,7 +829,7 @@ void Menu::main()
     
     while(1)
     {
-        heat_set(0); // turn off for safety
+        element.set(0); // turn off for safety
         
         if (screen_dirty != 0) // only draw if required
         {
@@ -883,7 +929,7 @@ void Menu::main()
 
 void Menu::auto_go(profile_t* profile)
 {
-    sensor_filter_reset();
+    sensor.filter_reset();
     
     settings.Load(); // load from eeprom
     
@@ -927,9 +973,9 @@ void Menu::auto_go(profile_t* profile)
     uint16_t length_cnt = 0; // counter for a particular stage
     char update_graph = 0; // if there is new stuff to draw
     uint16_t pwm_ocr = 0; // temporary holder for PWM duty cycle
-    double tgt_temp = sensor_to_temperature(sensor_read());
+    double tgt_temp = sensor_to_temperature(sensor.read());
     double start_temp = tgt_temp;
-    uint16_t cur_sensor = sensor_read();
+    uint16_t cur_sensor = sensor.read();
     while (1)
     {	
         if (tmr_checktemp_flag)
@@ -938,12 +984,12 @@ void Menu::auto_go(profile_t* profile)
             
             total_cnt++;
             
-            cur_sensor = sensor_read();
+            cur_sensor = sensor.read();
             
             if (DEMO_MODE)
             {
                 // in demo mode, we fake the reading
-                cur_sensor = temperature_to_sensor(tgt_temp);
+                cur_sensor = sensor.temperature_to_sensor(tgt_temp);
             }
             
             if (stage == 0) // preheat to thermal soak temperature
@@ -972,10 +1018,10 @@ void Menu::auto_go(profile_t* profile)
                     
                     // calculate the maximum allowable PWM duty cycle because we already know the maximum heating rate
                     //uint32_t upperlimit = lround((1.125 * 65535.0 * profile->start_rate) / max_heat_rate);
-                    //upperlimit = max(upperlimit, approx_pwm(temperature_to_sensor(tgt_temp)));
+                    //upperlimit = max(upperlimit, approx_pwm(sensor.temperature_to_sensor(tgt_temp)));
                     
                     // calculate and set duty cycle
-                    uint16_t pwm = pid((double)temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
+                    uint16_t pwm = pid((double)sensor.temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
                     pwm_ocr = pwm;
                     //pwm_ocr = pwm > upperlimit ? upperlimit : pwm;
                 }
@@ -997,7 +1043,7 @@ void Menu::auto_go(profile_t* profile)
                     // keep the temperature steady
                     tgt_temp = (((profile->soak_temp2 - profile->soak_temp1) / profile->soak_length) * (length_cnt * TMR_OVF_TIMESPAN * 256)) + profile->soak_temp1;
                     tgt_temp = min(tgt_temp, profile->soak_temp2);
-                    pwm_ocr = pid((double)temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
+                    pwm_ocr = pid((double)sensor.temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
                 }
             }
             
@@ -1017,7 +1063,7 @@ void Menu::auto_go(profile_t* profile)
                     // raise the temperature
                     tgt_temp = (((profile->peak_temp - profile->soak_temp2) / profile->time_to_peak) * (length_cnt * TMR_OVF_TIMESPAN * 256)) + profile->soak_temp2;
                     tgt_temp = min(tgt_temp, profile->peak_temp);
-                    pwm_ocr = pid((double)temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
+                    pwm_ocr = pid((double)sensor.temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
                 }
             }
             
@@ -1033,14 +1079,14 @@ void Menu::auto_go(profile_t* profile)
                 else
                 {
                     tgt_temp = profile->peak_temp + 5.0;
-                    pwm_ocr = pid((double)temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
+                    pwm_ocr = pid((double)sensor.temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
                 }
             }
             
             if (stage == 4) // cool down
             {
                 length_cnt++;
-                if (cur_sensor < temperature_to_sensor(ROOM_TEMP * 1.25))
+                if (cur_sensor < sensor.temperature_to_sensor(ROOM_TEMP * 1.25))
                 {
                     pwm_ocr = 0; // turn off
                     tgt_temp = ROOM_TEMP;
@@ -1050,16 +1096,16 @@ void Menu::auto_go(profile_t* profile)
                 {
                     // change the target temperature
                     tgt_temp = profile->peak_temp - (profile->cool_rate * TMR_OVF_TIMESPAN * 256 * length_cnt);
-                    uint16_t pwm = pid((double)temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
+                    uint16_t pwm = pid((double)sensor.temperature_to_sensor(tgt_temp), (double)cur_sensor, &integral, &last_error);
                     
                     // apply a upper limit to the duty cycle to avoid accidentally heating instead of cooling
-                    //uint16_t ap = approx_pwm(temperature_to_sensor(tgt_temp));
+                    //uint16_t ap = approx_pwm(sensor.temperature_to_sensor(tgt_temp));
                     //pwm_ocr = pwm > ap ? ap : pwm;
                     pwm_ocr = pwm;
                 }
             }
             
-            heat_set(pwm_ocr); // set the heating element power
+            element.set(pwm_ocr); // set the heating element power
             
             graph_timer += TMR_OVF_TIMESPAN * 256;
             
@@ -1162,7 +1208,7 @@ void Menu::auto_go(profile_t* profile)
             Serial.print(stage); Serial.print(PSTR(", "));
             Serial.print(str_from_double(total_cnt * TMR_OVF_TIMESPAN * 256, 1)); Serial.print(PSTR(", "));
             Serial.print(cur_sensor); Serial.print(PSTR(", "));
-            Serial.print(temperature_to_sensor(tgt_temp)); Serial.print(PSTR(", "));
+            Serial.print(sensor.temperature_to_sensor(tgt_temp)); Serial.print(PSTR(", "));
             Serial.print(str_from_int(pwm_ocr)); Serial.print(PSTR(", "));
             //fprintf_P(&log_stream, PSTR("%s, "), str_from_int(pwm_ocr));
             //fprintf_P(&log_stream, PSTR("%s,\n"), str_from_double(integral, 1));

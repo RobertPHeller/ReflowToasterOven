@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:02:49 2018
-//  Last Modified : <180326.1029>
+//  Last Modified : <180326.1309>
 //
 //  Description	
 //
@@ -44,11 +44,32 @@
 #ifndef __TEMPERATUREMEASUREMENT_H
 #define __TEMPERATUREMEASUREMENT_H
 
-void adc_init();
-uint16_t sensor_read();
-uint16_t temperature_to_sensor(double temp);
-void sensor_filter_reset();
-void get_ADC_sample ();
+#define THERMOCOUPLE_CONSTANT 0.32 // this is derived from the AD595AQ datasheet
+#define ROOM_TEMP 20.0
+#define TEMP_MEASURE_CHAN A0 // AnalogRead() the ADC pin connected to the AD595AQ
+#define ADC_SAMPLE_SIZE 128
+#define ADC_AVERAGE_SIZE (ADC_SAMPLE_SIZE/4)
+
+class TemperatureMeasurement {
+private:
+    volatile uint16_t adc_samples[ADC_SAMPLE_SIZE];
+    volatile uint8_t adc_sample_idx;
+    uint16_t temp_last_read;
+public:
+    TemperatureMeasurement() {
+        temp_last_read = 0;
+    }
+    void init();
+    uint16_t read();
+    uint16_t temperature_to_sensor(double temp) const;
+    void filter_reset();
+    void get_ADC_sample ();
+};
+
+
+#define sensor_to_temperature(x) ((x)*THERMOCOUPLE_CONSTANT)
+
+extern TemperatureMeasurement sensor;
 
 #endif // __TEMPERATUREMEASUREMENT_H
 

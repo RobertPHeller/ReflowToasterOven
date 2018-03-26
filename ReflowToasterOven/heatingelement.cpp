@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:35:52 2018
-//  Last Modified : <180326.1027>
+//  Last Modified : <180326.1320>
 //
 //  Description	
 //
@@ -46,21 +46,20 @@
 static const char rcsid[] PROGMEM = "@(#) : $Id$";
 
 
-void heat_init()
+void Heat::init()
 {
+    pwm_ocr = 0;
+    pwm_ocr_temp = 0;
+    isr_cnt = 0;
     pinMode(RELAYCTRL,OUTPUT);
 }
 
-volatile uint16_t pwm_ocr = 0;
-volatile uint16_t pwm_ocr_temp = 0;
-volatile uint16_t heat_isr_cnt = 0;
-
 // this function needs to be called during the timer overflow interrupt of a 8-bit timer running at 8MHz/64
-void heat_isr()
+void Heat::isr()
 {
-	if (heat_isr_cnt == 511)
+	if (isr_cnt == 511)
 	{
-		heat_isr_cnt = 0;
+		isr_cnt = 0;
 		pwm_ocr = pwm_ocr_temp;
 		if (pwm_ocr > 0)
 		{
@@ -73,16 +72,16 @@ void heat_isr()
 	}
 	else
 	{
-		if (pwm_ocr <= heat_isr_cnt)
+		if (pwm_ocr <= isr_cnt)
 		{
 			digitalWrite(RELAYCTRL,0);
 		}
 		
-		heat_isr_cnt++;
+		isr_cnt++;
 	}
 }
 
-void heat_set(uint16_t ocr)
+void Heat::set(uint16_t ocr)
 {
 	pwm_ocr_temp = ocr >> 7;
 }

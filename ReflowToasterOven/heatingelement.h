@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:22:44 2018
-//  Last Modified : <180326.1028>
+//  Last Modified : <180326.1320>
 //
 //  Description	
 //
@@ -44,12 +44,25 @@
 #ifndef __HEATINGELEMENT_H
 #define __HEATINGELEMENT_H
 
-static const uint8_t RELAYCTRL = 7; // Relay for heating elements (DigitalWrite())
+#define RELAYCTRL 7 // Relay for heating elements (DigitalWrite())
 
-void heat_init();
-void heat_isr();
-void heat_set(uint16_t ocr);
+class Heat {
+private:
+    volatile uint16_t pwm_ocr;
+    volatile uint16_t pwm_ocr_temp;
+    volatile uint16_t isr_cnt;
+public:
+    Heat() {
+        pwm_ocr = 0;
+        pwm_ocr_temp = 0;
+        isr_cnt = 0;
+    }
+    void init();
+    void isr();
+    void set(uint16_t ocr);
+};
 
+extern Heat element;
 
 #endif // __HEATINGELEMENT_H
 

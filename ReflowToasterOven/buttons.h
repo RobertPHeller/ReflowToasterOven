@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:23:58 2018
-//  Last Modified : <180326.1026>
+//  Last Modified : <180326.1313>
 //
 //  Description	
 //
@@ -47,9 +47,9 @@
 #define button_debounce_ms(x) delay(x)
 #define button_debounce() delayMicroseconds(100)
 
-static const uint8_t SWITCH3 = 4; /* |     */ 
-static const uint8_t SWITCH2 = 5; /*  } Push buttons (DigitalRead()) */
-static const uint8_t SWITCH1 = 6; /* |     */
+#define SWITCH3 4 /* |     */ 
+#define SWITCH2 5 /*  } Push buttons (DigitalRead()) */
+#define SWITCH1 6 /* |     */
 
 #define buttons_init() do{ \
 pinMode(SWITCH1, INPUT_PULLUP); \
