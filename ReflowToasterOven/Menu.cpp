@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 14:46:53 2018
-//  Last Modified : <180325.1415>
+//  Last Modified : <180326.1026>
 //
 //  Description	
 //
@@ -19,6 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright (C) 2018  Robert Heller D/B/A Deepwoods Software
+//    (Portions Copyright (C) 2011 Frank Zhao)
 //			51 Locke Hill Road
 //			Wendell, MA 01379-9728
 //

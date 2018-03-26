@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:05:37 2018
-//  Last Modified : <180325.0802>
+//  Last Modified : <180326.1040>
 //
 //  Description	
 //
@@ -19,6 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright (C) 2018  Robert Heller D/B/A Deepwoods Software
+//    (Portions Copyright (C) 2011 Frank Zhao)
 //			51 Locke Hill Road
 //			Wendell, MA 01379-9728
 //
@@ -53,13 +54,6 @@
 #define ROOM_TEMP 20.0
 #define TEMP_MEASURE_CHAN A0 // AnalogRead() the ADC pin connected to the AD595AQ
 #define DEMO_MODE 0 // 1 means the current temperature reading will always be overwritten to match the target temperature, note that PWM output is still active even if in DEMO mode
-extern volatile char tmr_writelog_flag;
-extern volatile char tmr_checktemp_flag;
-extern volatile char tmr_drawlcd_flag;
-
-void auto_go(profile_t* profile);
-
-#define sensor_to_temperature(x) ((x)*THERMOCOUPLE_CONSTANT)
 
 extern volatile uint16_t tmr_ovf_cnt;
 extern volatile char tmr_checktemp_flag;

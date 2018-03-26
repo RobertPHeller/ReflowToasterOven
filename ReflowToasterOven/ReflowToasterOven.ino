@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 13:01:57 2018
-//  Last Modified : <180325.1420>
+//  Last Modified : <180326.1044>
 //
 //  Description	
 //
@@ -18,7 +18,9 @@
 //	
 /////////////////////////////////////////////////////////////////////////////
 //
+//    
 //    Copyright (C) 2018  Robert Heller D/B/A Deepwoods Software
+//    (Portions Copyright (C) 2011 Frank Zhao)
 //			51 Locke Hill Road
 //			Wendell, MA 01379-9728
 //
@@ -56,8 +58,6 @@ static const char rcsid[] PROGMEM = "@(#) : $Id$";
 settings_t settings; // store this globally so it's easy to access
 
 void tmr_init();
-void auto_go(profile_t* profile);
-void draw_graph();
 
 uint16_t pid(double target, double current, double * integral, double * last_error);
 
@@ -70,10 +70,9 @@ void setup()
     Serial.println(PSTR("Initializing..."));
     
     adc_init();
-    buttons_init();
     heat_init();
     tmr_init();
-    
+    menu.init();
     Serial.println(PSTR("Reflow Toaster Oven 1.0 Setup finished"));
     menu.main();
 }

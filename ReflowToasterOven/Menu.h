@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Sat Mar 24 14:45:39 2018
-//  Last Modified : <180325.1421>
+//  Last Modified : <180326.1040>
 //
 //  Description	
 //
@@ -19,6 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 //    Copyright (C) 2018  Robert Heller D/B/A Deepwoods Software
+//    (Portions Copyright (C) 2011 Frank Zhao)
 //			51 Locke Hill Road
 //			Wendell, MA 01379-9728
 //
@@ -54,6 +55,10 @@
 #include "buttons.h"
 #include <string.h>
 #include <stdlib.h>
+
+#define sensor_to_temperature(x) ((x)*THERMOCOUPLE_CONSTANT)
+
+
 
 static const uint8_t BUZZER = 2;    // Buzzer -- passed to Tone()
 static const uint8_t BACKLIGHT = 3; // PWM / AnalogWrite() backlight brightness
@@ -113,6 +118,9 @@ public:
         txtfg = _txtfg;
         txtbg = _bg;
         graphcolor = _graphcolor;
+    }
+    void init() {
+        buttons_init();
         initR(INITR_BLACKTAB);
         fillScreen(bg);
         setTextColor(txtfg,txtbg);
