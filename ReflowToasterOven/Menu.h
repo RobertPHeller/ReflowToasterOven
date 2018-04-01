@@ -77,7 +77,7 @@
 class Menu : public Adafruit_ST7735 {
 private:
     // Graphics colors
-    uint16_t bg, graphcolor, txtfg, txtbg,;
+    uint16_t bg, graphcolor, txtfg, txtbg;
     // this string is allocated for temporary use
     char strbuf[(LCD_WIDTH/FONT_WIDTH) + 2];
     // this counts the number of loop iterations that a button has been held for
